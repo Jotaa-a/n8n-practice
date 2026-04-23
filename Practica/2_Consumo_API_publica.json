@@ -1,0 +1,103 @@
+{
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          48,
+          960
+        ],
+        "id": "8c96ec71-a7b4-4208-b700-aa2c3a386fc5",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          768,
+          960
+        ],
+        "id": "a9205627-23f7-4ecf-ade6-393ea72f392b",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "url": "https://api.chucknorris.io/jokes/random",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          272,
+          960
+        ],
+        "id": "0325ed73-d87b-4800-84f2-4e1b62a0c407",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "52c1a559-2f05-48b4-8ef1-57dcdecfabc6",
+                "name": "Chiste JAJDSJASDJSJDJASD",
+                "value": "={{ $json.value }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          480,
+          960
+        ],
+        "id": "0beaf028-f449-43f1-a1cb-69c3fb7800c4",
+        "name": "Edit Fields"
+      }
+    ],
+    "connections": {
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "pinData": {},
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "4d145fd139d1eaaf23eb84fb90956419885a76b409816c7f74cf5f25b26e2dfe"
+    }
+  }
