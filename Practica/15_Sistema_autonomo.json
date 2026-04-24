@@ -1,0 +1,292 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        }
+      },
+      "id": "4d483c02-2969-4740-a44a-3f5f76c9d2e0",
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        6464
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const randomIndex = Math.floor(Math.random() * items.length);\nreturn [items[randomIndex]];"
+      },
+      "id": "40711e30-9b02-4cbd-a2e4-7e252b03368c",
+      "name": "Random Country",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        6464
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": "gpt-4o-mini",
+        "responses": {
+          "values": [
+            {
+              "content": "Analiza el siguiente país:\nNombre: {{$json.name.common}}\nPoblación: {{$json.population}}\nRegión: {{$json.region}}\n\nAgrega:\n- idioma principal\n- moneda\n- una curiosidad breve\n\nClasifica por población:\nALTA (>50M), MEDIA (10M-50M), BAJA (<10M)\n\nDevuelve SOLO JSON:\n{\n  \"pais\": \"\",\n  \"poblacion\": 0,\n  \"region\": \"\",\n  \"idioma\": \"\",\n  \"moneda\": \"\",\n  \"curiosidad\": \"\",\n  \"clasificacion\": \"\"\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "40ca18d7-8fa7-4033-a418-8265a7436e07",
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        192,
+        6464
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "fXmzPfeiGU9eXQFl",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const raw = item.json.output[0].content[0].text;\n\n  try {\n    const parsed = JSON.parse(raw.trim());\n    return { json: parsed };\n  } catch (error) {\n    return {\n      json: {\n        error: true,\n        raw: raw\n      }\n    };\n  }\n});"
+      },
+      "id": "3f684abc-5644-43c7-baf6-9d19b0657ed4",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        6464
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.error}}"
+            }
+          ]
+        }
+      },
+      "id": "e4222a2e-587e-46eb-b2d1-ce1a178d0797",
+      "name": "IF Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        592,
+        6464
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c7958d6d-aea8-4232-953c-75f15ec751e4",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        784,
+        6352
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.clasificacion}}",
+              "operation": "equals",
+              "value2": "ALTA"
+            }
+          ]
+        }
+      },
+      "id": "78e53e94-89b1-47b3-9346-5cc7d66cbe61",
+      "name": "IF Clasificación",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        784,
+        6560
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "5cb9add0-890d-4f7a-a3cd-4ba1321cb2aa",
+      "name": "Alta Población",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        992,
+        6464
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b0874922-6c05-4621-b722-816dca55771d",
+      "name": "Registro Normal",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        992,
+        6656
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://restcountries.com/v3.1/all?fields=name,capital,currencies",
+        "options": {}
+      },
+      "id": "6ba36758-65e7-4495-9fca-e6a235cf7d9c",
+      "name": "HTTP Request11",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -416,
+        6464
+      ]
+    },
+    {
+      "parameters": {
+        "maxItems": 50
+      },
+      "id": "ae04f122-d9e6-43b8-997e-ff8b504595d6",
+      "name": "Limit4",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        6464
+      ]
+    }
+  ],
+  "connections": {
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Random Country": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "IF Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Clasificación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Clasificación": {
+      "main": [
+        [
+          {
+            "node": "Alta Población",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registro Normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request11": {
+      "main": [
+        [
+          {
+            "node": "Limit4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit4": {
+      "main": [
+        [
+          {
+            "node": "Random Country",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4d145fd139d1eaaf23eb84fb90956419885a76b409816c7f74cf5f25b26e2dfe"
+  }
+}

@@ -1,0 +1,324 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        4656
+      ],
+      "id": "794898b9-2c4d-40ff-8713-9ee74711d117",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const raw = item.json.output[0].content[0].text;\n\n  try {\n    const parsed = JSON.parse(raw);\n    return {\n      json: parsed\n    };\n  } catch (error) {\n    return {\n      json: {\n        error: \"No se pudo parsear\",\n        raw: raw\n      }\n    };\n  }\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        4656
+      ],
+      "id": "67ebc452-506e-491f-8d09-70a9bef6ffe2",
+      "name": "parsed1"
+    },
+    {
+      "parameters": {
+        "url": "https://jsonplaceholder.typicode.com/posts",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -128,
+        4656
+      ],
+      "id": "c8674ab4-16c5-40fc-ba69-876a5fc55b0e",
+      "name": "HTTP Request9"
+    },
+    {
+      "parameters": {
+        "maxItems": 30
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        80,
+        4656
+      ],
+      "id": "55cc21a2-8972-4910-8444-411feebf7035",
+      "name": "Limit2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=\"Analiza el siguiente texto de un post: '{{ $json.body }}'.\n\nClasifícalo en una de estas categorías: 'EDUCATIVO', 'QUEJA' o 'GENERAL'.\n\nDetermina su sentimiento: 'POSITIVO', 'NEGATIVO' o 'NEUTRAL'.\n\nResponde únicamente con un JSON que contenga ambos resultados, sin texto adicional ni introducciones.\nFormato esperado:\n{\n\"categoria\": \"NOMBRE_CATEGORIA\",\n\"sentimiento\": \"SENTIMIENTO\"\n}\""
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        288,
+        4656
+      ],
+      "id": "6da3a54e-5e67-4a49-9756-e06f03762ed1",
+      "name": "Message a model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "fXmzPfeiGU9eXQFl",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d4ba19e7-5e92-4fd3-92ab-dec74781c7f8",
+              "leftValue": "={{ $json.sentimiento.toLowerCase() }}",
+              "rightValue": "negativo",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        4656
+      ],
+      "id": "6f8e1735-82de-4675-a1a2-b80a59fefe7e",
+      "name": "neg or pos"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7596844a-0c92-403a-9d50-e515b89603fa",
+              "name": "Alerta",
+              "value": "=Comentario{{ $('parsed1').item.json.sentimiento }} detectado",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1056,
+        4560
+      ],
+      "id": "68d6ad77-dbbc-414f-ae52-0161e83b437d",
+      "name": "Alerta"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1o6EKpyt0Myo0O0brltx-sgZdKAMoD3zJrgvAQF-BSfg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1o6EKpyt0Myo0O0brltx-sgZdKAMoD3zJrgvAQF-BSfg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tipo ": "={{ $('parsed1').item.json.sentimiento }}",
+            "Comentario": "={{ $('Limit2').item.json.body }}"
+          },
+          "matchingColumns": [
+            "Comentario"
+          ],
+          "schema": [
+            {
+              "id": "Tipo ",
+              "displayName": "Tipo ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Comentario",
+              "displayName": "Comentario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1264,
+        4560
+      ],
+      "id": "d00b2b05-2b3c-478b-b0d8-22259b5a8a9f",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "k0cIU5g78RV6iniM",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "beb16973-a474-454b-b7a6-863efc089490",
+              "name": "Comentarios",
+              "value": "Hay comentarios de apoyo",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        4752
+      ],
+      "id": "f923da83-57b4-4c7f-8cae-6485365c7746",
+      "name": "Edit Fields13"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parsed1": {
+      "main": [
+        [
+          {
+            "node": "neg or pos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request9": {
+      "main": [
+        [
+          {
+            "node": "Limit2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit2": {
+      "main": [
+        [
+          {
+            "node": "Message a model3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model3": {
+      "main": [
+        [
+          {
+            "node": "parsed1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "neg or pos": {
+      "main": [
+        [
+          {
+            "node": "Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alerta": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4d145fd139d1eaaf23eb84fb90956419885a76b409816c7f74cf5f25b26e2dfe"
+  }
+}
