@@ -1,0 +1,120 @@
+{
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -352,
+          4128
+        ],
+        "id": "794898b9-2c4d-40ff-8713-9ee74711d117",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "url": "https://jsonplaceholder.typicode.com/posts",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          -144,
+          4128
+        ],
+        "id": "88cc87b4-848b-418a-8d9b-c4aae6abe1c8",
+        "name": "HTTP Request7"
+      },
+      {
+        "parameters": {
+          "maxItems": 3
+        },
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          64,
+          4128
+        ],
+        "id": "e2ca0c69-3566-490e-a65d-a49d62fa8454",
+        "name": "Limit"
+      },
+      {
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "GPT-4O-MINI"
+          },
+          "responses": {
+            "values": [
+              {
+                "content": "=\"Analiza el siguiente texto de un post: '{{ $json.body }}'.\n\nClasifícalo en una de estas categorías: 'EDUCATIVO', 'QUEJA' o 'GENERAL'.\n\nDetermina su sentimiento: 'POSITIVO', 'NEGATIVO' o 'NEUTRAL'.\n\nResponde únicamente con un JSON que contenga ambos resultados, sin texto adicional ni introducciones.\nFormato esperado:\n{\n\"categoria\": \"NOMBRE_CATEGORIA\",\n\"sentimiento\": \"SENTIMIENTO\"\n}\""
+              }
+            ]
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 2.1,
+        "position": [
+          272,
+          4128
+        ],
+        "id": "1b12a2a5-06c8-4374-ad51-a96a34ee7811",
+        "name": "Message a model1",
+        "credentials": {
+          "openAiApi": {
+            "id": "fXmzPfeiGU9eXQFl",
+            "name": "n8n free OpenAI API credits"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request7",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request7": {
+        "main": [
+          [
+            {
+              "node": "Limit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Limit": {
+        "main": [
+          [
+            {
+              "node": "Message a model1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Message a model1": {
+        "main": [
+          []
+        ]
+      }
+    },
+    "pinData": {},
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "4d145fd139d1eaaf23eb84fb90956419885a76b409816c7f74cf5f25b26e2dfe"
+    }
+  }

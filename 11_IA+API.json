@@ -1,0 +1,137 @@
+{
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -272,
+          3808
+        ],
+        "id": "8c96ec71-a7b4-4208-b700-aa2c3a386fc5",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "url": "https://newsapi.org/v2/everything?q=tesla&from=2026-03-24&sortBy=publishedAt&apiKey=6d5d25ea8182491e91e58d624842cc7e",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          -48,
+          3808
+        ],
+        "id": "cabb733b-3a0f-48ca-9e48-28044adfb950",
+        "name": "HTTP Request6"
+      },
+      {
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "GPT-4O-MINI"
+          },
+          "responses": {
+            "values": [
+              {
+                "content": "=Actúa como un experto en noticias. Resume el siguiente contenido en 3 puntos clave:  {{ $json.Title }} {{ $json.description }}  {{ $json.Content }}. Devuelve la respuesta en español"
+              }
+            ]
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 2.1,
+        "position": [
+          368,
+          3808
+        ],
+        "id": "b0dbe382-f514-4494-b5c2-9c88c0fddb59",
+        "name": "Message a model",
+        "credentials": {
+          "openAiApi": {
+            "id": "fXmzPfeiGU9eXQFl",
+            "name": "n8n free OpenAI API credits"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "7afe4574-b3c1-45bf-8005-cf20905c9df7",
+                "name": "description",
+                "value": "={{ $json.articles[0].description }}",
+                "type": "string"
+              },
+              {
+                "id": "5822cfcf-671c-42ca-81c1-f84dd078f2e1",
+                "name": "Title",
+                "value": "={{ $json.articles[0].title }}",
+                "type": "string"
+              },
+              {
+                "id": "da822fba-5899-4f87-b9f5-ae383e2089af",
+                "name": "Content",
+                "value": "={{ $json.articles[0].content }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          160,
+          3808
+        ],
+        "id": "81acb0a5-9f33-4a7b-875c-2ad0b66ed7eb",
+        "name": "Edit Fields11"
+      }
+    ],
+    "connections": {
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request6",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request6": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields11",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields11": {
+        "main": [
+          [
+            {
+              "node": "Message a model",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "pinData": {},
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "4d145fd139d1eaaf23eb84fb90956419885a76b409816c7f74cf5f25b26e2dfe"
+    }
+  }
